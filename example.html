@@ -9,9 +9,53 @@ and open the template in the editor.
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
+        <script type='text/javascript' src='dynamicTable.js'></script>
     </head>
     <body>
-        <div>TODO write content</div>
+        <table id="tabelka">
+            <thead>
+                <tr>
+                    <td>Imię <span id="sort-imie-up">Góra</span> | <span id="sort-imie-down">Dół</span></td>
+                    <td>Nazwisko <span id="sort-nazwisko-up">Góra</span> | <span id="sort-nazwisko-down">Dół</span></td>
+                    <td>Wiek <span id="sort-wiek-up">Góra</span> | <span id="sort-wiek-down">Dół</span></td>
+                    <td>Miejsce urodzenia <span id="sort-miasto-up">Góra</span> | <span id="sort-miasto-down">Dół</span></td>
+                </tr>
+            </thead>
+        </table>
+        
+        
+        
+<script type="text/javascript">
+    var table = document.getElementById('tabelka');
+    
+    var config = {
+        columns: {
+            0: {
+                id: '',
+                sort: { up: 'sort-imie-up', down: 'sort-imie-down'},
+                data: 'imie'
+            },
+            1: {
+                id: '',
+                sort: { up: 'sort-nazwisko-up', down: 'sort-nazwisko-down'},
+                data: 'nazwisko',                
+            },
+            2: {
+                id: '',
+                sort: { up: 'sort-wiek-up', down: 'sort-wiek-down'},
+                data: 'wiek'
+            },
+            3: {
+                id: '',
+                sort: { up: 'sort-miasto-up', down: 'sort-miasto-down'},
+                data: 'miasto'
+            }
+        }
+    }
+    var dynamicTable = new DynamicTable();
+    dynamicTable.init(table, config);
+    
+</script>
     </body>
+    
 </html>
