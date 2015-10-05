@@ -84,6 +84,11 @@ function DynamicTable() {
         },
         columns: {}      
     };
+    
+    this.TYPE_ASC = 0;
+    this.TYPE_DESC = 1;
+    
+    this.columnIndexes = {};
     this.tableContainer = null;
     this.header = null;
     this.headerElement = null;
@@ -126,7 +131,7 @@ function DynamicTable() {
         this.bodyElement.innerHTML = '';
         
         /**
-         * CLEAR PAGINATION;
+         * TODO CLEAR PAGINATION;
          */
     };
     
@@ -251,11 +256,27 @@ function DynamicTable() {
         }
     };
     
-    this.bindEvents = function() {
-        console.log(this.header);
+    this.sortData = function(type, column) {
+        var colIndex = this.columnIndexes[column];
+        var oldOrder = {};
+        var newOrder = 1;
+        
+        for (var x in this.data) {
+            oldOrder[this.data[x][colIndex]] = x;
+            
+        }
+    };
+    
+    this.bindEvents = function() {        
+        var that = this;
         for(var x in this.header) {
             if (typeof this.header[x].sort !== 'undefined' && typeof this.header[x].sort.up !== 'undefined' && typeof this.header[x].sort.down !== 'undefined') {
-                this.header[x].sort.up.addEventListener
+                this.header[x].sort.up.addEventListener('click', function() {
+                    that.sortData(that.TYPE_ASC, this.dataset.column);
+                });
+                this.header[x].sort.down.addEventListener('click', function() {
+                    that.sortData(that.TYPE_DESC, this.dataset.column);
+                });
             }
         }
     };
@@ -312,6 +333,8 @@ function DynamicTable() {
                 };
                 var thisId = trElements[y].id;
                 
+                this.columnIndexes[thisId] = i;
+                
                 if (typeof columns[thisId] !== 'undefined') {
                     if (typeof columns[thisId].sort !== 'undefined' && typeof columns[thisId].sort.up !== 'undefined' && typeof columns[thisId].sort.down !== 'undefiend') {
                         this.header[i].sort = {};
@@ -319,7 +342,7 @@ function DynamicTable() {
                         this.header[i].sort.down = document.getElementById(columns[thisId].sort.down);
                         this.header[i].sort.up.dataset.column = thisId;
                         this.header[i].sort.down.dataset.column = thisId;
-                    }                    
+                    }
                 }
          
                 i++;
