@@ -12,49 +12,73 @@ and open the template in the editor.
         <script type='text/javascript' src='dynamicTable.js'></script>
     </head>
     <body>
-        <table id="tabelka">
+        <table id="tabelka" border="1">
             <thead>
                 <tr>
-                    <td>Imię <span id="sort-imie-up">Góra</span> | <span id="sort-imie-down">Dół</span></td>
-                    <td>Nazwisko <span id="sort-nazwisko-up">Góra</span> | <span id="sort-nazwisko-down">Dół</span></td>
-                    <td>Wiek <span id="sort-wiek-up">Góra</span> | <span id="sort-wiek-down">Dół</span></td>
-                    <td>Miejsce urodzenia <span id="sort-miasto-up">Góra</span> | <span id="sort-miasto-down">Dół</span></td>
+                    <td id="imie"><b>Imię</b> <span id="sort-imie-up">Góra</span> | <span id="sort-imie-down">Dół</span></td>
+                    <td id="nazwisko"><b>Nazwisko</b> <span id="sort-nazwisko-up">Góra</span> | <span id="sort-nazwisko-down">Dół</span></td>
+                    <td id="wiek"><b>Wiek</b> <span id="sort-wiek-up">Góra</span> | <span id="sort-wiek-down">Dół</span></td>
+                    <td id="miasto"><b>Miejsce urodzenia</b> <span id="sort-miasto-up">Góra</span> | <span id="sort-miasto-down">Dół</span></td>
                 </tr>
             </thead>
+            <tbody>
+                <tr>
+                    <td>Daniel</td>
+                    <td>Hornik</td>
+                    <td>21</td>
+                    <td>Marcinkowice</td>
+                </tr>
+            </tbody>
         </table>
+        <div id="pages">
+            
+        </div>
         
         
         
 <script type="text/javascript">
-    var table = document.getElementById('tabelka');
-    
+    var table = document.getElementById('tabelka');    
     var config = {
+        pagination: {
+            perPage: 2,
+            id: 'pages',
+            prev: 'pages-prev',
+            next: 'pages-next'
+        },
         columns: {
-            0: {
-                id: '',
+            imie: {
+                type: 'id',
                 sort: { up: 'sort-imie-up', down: 'sort-imie-down'},
-                data: 'imie'
             },
-            1: {
-                id: '',
-                sort: { up: 'sort-nazwisko-up', down: 'sort-nazwisko-down'},
-                data: 'nazwisko',                
+            nazwisko: {
+                type: 'id',
+                sort: { up: 'sort-nazwisko-up', down: 'sort-nazwisko-down'},          
             },
-            2: {
-                id: '',
+            wiek: {
+                type: 'id',
                 sort: { up: 'sort-wiek-up', down: 'sort-wiek-down'},
-                data: 'wiek'
             },
-            3: {
-                id: '',
-                sort: { up: 'sort-miasto-up', down: 'sort-miasto-down'},
-                data: 'miasto'
+            miasto: {
+                type: 'id',
+                sort: {down: 'sort-miasto-down'},
             }
         }
     }
+    var data = [
+        ['Daniel',  'Hornik',   22, 'Nowy Sącz'],
+        ['Jan',     'Kowalski', 26, 'Kraków'],
+        ['Adam',    'Nowak',    24, 'Różanna'],
+        ['Anna',    'Maria',    25, 'Klęczany'],
+        ['Ula',     'Zagóra',   25, 'Męcina'],
+        ['Jan',     'Kowalski', 25, 'Limanowa'],
+    ]
+    
     var dynamicTable = new DynamicTable();
     dynamicTable.init(table, config);
-    
+    dynamicTable.setData(data);
+    dynamicTable.clear();
+    dynamicTable.draw();
+    dynamicTable.pagination();
 </script>
     </body>
     
