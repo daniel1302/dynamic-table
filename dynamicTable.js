@@ -15,6 +15,65 @@ var newElement = function(name, attr) {
     return tmp;
 };
 
+function hasClass(element, className) {
+    if (typeof element !== 'object' || typeof element.className === 'undefined') {
+        return false;
+    }
+    
+    var classes = String(element.className).split(' ');
+    for (var x in classes) {
+        if (classes[x] === String(className)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function addClass(element, className) {
+    if (typeof element !== 'object') {
+        return false;
+    }
+    
+    var  classes = '';
+    if (typeof element.className !== 'undefined') {
+        classes = String(element.className).split(' ');
+    }
+    
+    
+    for (var x in classes) {
+        if (classes[x] === String(className)) {
+            return true;
+        }
+    }
+    
+    classes[classes.length] = className;
+    element.className = classes.join(' ');
+    
+    return true;
+}
+
+function removeClass(element, className) {
+    if (typeof element !== 'object') {
+        return false;
+    }
+    
+    var  classes = '';
+    if (typeof element.className !== 'undefined') {
+        classes = String(element.className).split(' ');
+    }
+    
+    for (var x in classes) {
+        if (classes[x] === String(className)) {
+            delete classes[x];
+        }
+    }
+    var newClassName = classes.join(' ');
+    element.className = newClassName.trim();
+    
+    return true;
+}
+
 function DynamicTable() {
     this.config = {
         pagination: {
@@ -65,6 +124,10 @@ function DynamicTable() {
     
     this.clear = function() {
         this.bodyElement.innerHTML = '';
+        
+        /**
+         * CLEAR PAGINATION;
+         */
     };
     
     this.draw = function() {
@@ -124,15 +187,30 @@ function DynamicTable() {
             this.paginationElement.style.display = 'block';
             
             var pages = Math.ceil(elementsAmount/perPage);
-           
+            var that = this;
+            
             for (var i=1; i<=pages; i++) {
-                this.paginationElement.insertBefore(newElement('li', {
-                    innerHTML: i
-                }), nextElement);
+                var tmpElement = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
+                
+                tmpElement.addEventListener('click', function() {
+                    that.showPage(parseInt(this.dataset.page));
+                });
+                this.paginationElement.insertBefore(tmpElement, nextElement);
             }
-        }
-        
-        this.showPage(0);
+            
+            this.paginationPrevElement.addEventListener('click', function() {
+                if (that.page > 1) {
+                    that.showPage(that.page-1);
+                }
+            });
+            this.paginationNextElement.addEventListener('click', function() {
+                if (that.page < Math.ceil(elementsAmount/perPage)) {
+                    that.showPage(that.page+1);
+                }
+            });
+            
+            this.showPage(1);
+        }        
     };
     
     this.showPage = function(pageNumber) {
@@ -142,21 +220,44 @@ function DynamicTable() {
         var elementsAmount = this.data.length;
         var pages = Math.ceil(elementsAmount/perPage);
         
-        if (pageNumber > pages) {
+        if (pageNumber > pages || pageNumber < 1) {
             throw 'Taka strona nie istnieje!';
         }
-        console.log(children);
+
+        this.page = pageNumber;
+        
         var i = 0;
         for (var x in children) {
-            if (String(children[x].tagName).toLowerCase() === 'tr' && i >= ((pageNumber-1)*perPage) && i < (pageNumber*perPage)) {
-                console.log('Pokazuje');
+            if (String(children[x].tagName).toLowerCase() === 'tr') {
+                if (i >= ((pageNumber-1)*perPage) && i < (pageNumber*perPage)) {
+                    children[x].style.display = 'table-row';                    
+                } else {
+                    children[x].style.display = 'none';
+                }
             }
+            
             i++;
         }
-    }
+        
+        var pChildren = this.paginationElement.children;
+        for (var x in pChildren) {
+            if (String(pChildren[x].tagName).toLowerCase() === 'li') {
+                if (typeof pChildren[x].dataset !== 'undefined' && typeof pChildren[x].dataset.page !== 'undefined' && parseInt(pChildren[x].dataset.page) === parseInt(pageNumber)) {
+                    addClass(pChildren[x], 'active');
+                } else {
+                    removeClass(pChildren[x], 'active');
+                }
+            }
+        }
+    };
     
     this.bindEvents = function() {
-        
+        console.log(this.header);
+        for(var x in this.header) {
+            if (typeof this.header[x].sort !== 'undefined' && typeof this.header[x].sort.up !== 'undefined' && typeof this.header[x].sort.down !== 'undefined') {
+                this.header[x].sort.up.addEventListener
+            }
+        }
     };
     
     this.setData = function(data) {
@@ -214,8 +315,10 @@ function DynamicTable() {
                 if (typeof columns[thisId] !== 'undefined') {
                     if (typeof columns[thisId].sort !== 'undefined' && typeof columns[thisId].sort.up !== 'undefined' && typeof columns[thisId].sort.down !== 'undefiend') {
                         this.header[i].sort = {};
-                        this.header[i].sort.up = document.getElementById(columns[thisId].sort.up); 
+                        this.header[i].sort.up = document.getElementById(columns[thisId].sort.up);
                         this.header[i].sort.down = document.getElementById(columns[thisId].sort.down);
+                        this.header[i].sort.up.dataset.column = thisId;
+                        this.header[i].sort.down.dataset.column = thisId;
                     }                    
                 }
          

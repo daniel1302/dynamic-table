@@ -10,9 +10,24 @@ and open the template in the editor.
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type='text/javascript' src='dynamicTable.js'></script>
+        <style type="text/css">
+            #pages > ul > li {
+                cursor: pointer;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            td > span {
+                cursor: pointer;
+                color: dodgerblue;
+            }
+        </style>
     </head>
     <body>
-        <table id="tabelka" border="1">
+        <table id="tabelka" border="1" width="75%">
             <thead>
                 <tr>
                     <td id="imie"><b>Imię</b> <span id="sort-imie-up">Góra</span> | <span id="sort-imie-down">Dół</span></td>
@@ -71,7 +86,7 @@ and open the template in the editor.
         ['Anna',    'Maria',    25, 'Klęczany'],
         ['Ula',     'Zagóra',   25, 'Męcina'],
         ['Jan',     'Kowalski', 25, 'Limanowa'],
-    ]
+    ];
     
     var dynamicTable = new DynamicTable();
     dynamicTable.init(table, config);
