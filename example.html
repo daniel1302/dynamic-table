@@ -24,9 +24,13 @@ and open the template in the editor.
                 cursor: pointer;
                 color: dodgerblue;
             }
+            #pages .active {
+                color: red;
+            }
         </style>
     </head>
     <body>
+        <input type="text" name="find-in-all" id="find-in-all" style="width: 75%" /><br /><br />
         <table id="tabelka" border="1" width="75%">
             <thead>
                 <tr>
@@ -35,12 +39,23 @@ and open the template in the editor.
                     <td id="wiek"><b>Wiek</b> <span id="sort-wiek-up">Góra</span> | <span id="sort-wiek-down">Dół</span></td>
                     <td id="miasto"><b>Miejsce urodzenia</b> <span id="sort-miasto-up">Góra</span> | <span id="sort-miasto-down">Dół</span></td>
                 </tr>
+                <tr>
+                    <td colspan="2"><input type="text" name="find-imie-nazwisko" id="find-imie-nazwisko" style="width: 95%" /></td>
+                    <td><input type="text" name="find-wiek" id="find-wiek" style="width: 95%" /></td>
+                    <td><input type="text" name="find-miasto" id="find-miasto" style="width: 95%" /></td>
+                </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr style="color: #ff0000;">
+                    <td style="color: #0000ff;">Daniel</td>
+                    <td>Hornik</td>
+                    <td style="color: #0000ff;">18</td>
+                    <td>Marcinkowice</td>
+                </tr>
+                <tr style="color: #ff1234;">
                     <td>Daniel</td>
                     <td>Hornik</td>
-                    <td>21</td>
+                    <td style="color: #0000ff;">28</td>
                     <td>Marcinkowice</td>
                 </tr>
             </tbody>
@@ -55,7 +70,7 @@ and open the template in the editor.
     var table = document.getElementById('tabelka');    
     var config = {
         pagination: {
-            perPage: 2,
+            perPage: 4,
             id: 'pages',
             prev: 'pages-prev',
             next: 'pages-next'
@@ -75,21 +90,41 @@ and open the template in the editor.
             },
             miasto: {
                 type: 'id',
-                sort: {down: 'sort-miasto-down'},
+                sort: {up: 'sort-miasto-up', down: 'sort-miasto-down'},
+            }
+        },
+        find: {
+            'find-imie-nazwisko': {
+                columns: ['imie', 'nazwisko'],
+                type: 'combined'
+            },
+            'find-wiek': {
+                columns: ['wiek'],
+                type: 'separated'
+            },
+            'find-miasto': {
+                columns: ['miasto'],
+                type: 'separated'
+            },
+            'find-in-all': {
+                columns: ['imie', 'nazwisko', 'wiek', 'miasto'],
+                type: 'combined'
             }
         }
-    }
+    };
+    
     var data = [
         ['Daniel',  'Hornik',   22, 'Nowy Sącz'],
         ['Jan',     'Kowalski', 26, 'Kraków'],
         ['Adam',    'Nowak',    24, 'Różanna'],
         ['Anna',    'Maria',    25, 'Klęczany'],
-        ['Ula',     'Zagóra',   25, 'Męcina'],
-        ['Jan',     'Kowalski', 25, 'Limanowa'],
+        ['Ula',     'Zagóra',   21, 'Męcina'],
+        ['Jan',     'Kowalski', 30, 'Limanowa'],
     ];
     
     var dynamicTable = new DynamicTable();
     dynamicTable.init(table, config);
+    dynamicTable.getData();
     dynamicTable.setData(data);
     dynamicTable.clear();
     dynamicTable.draw();
