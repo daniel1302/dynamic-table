@@ -267,7 +267,7 @@ function DynamicTable() {
                 }
             });
             this.paginationNextElement.addEventListener('click', function() {
-                if (that.page < Math.ceil(this.rowsAmount/perPage)) {
+                if (that.page < Math.ceil(that.rowsAmount/perPage)) {
                     that.showPage(that.page+1);
                 }
             });   
