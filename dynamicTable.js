@@ -189,7 +189,7 @@ function DynamicTable() {
     };
     
     this.draw = function() {
-        for (var x in this.data) {
+        for (var x in this.data) {            
             this.drawRow(x);
         }
     };
@@ -400,7 +400,6 @@ function DynamicTable() {
         
         var findString = document.getElementById(findIndex).value;        
         var regexp = new RegExp('(.*)?'+findString+'(.*)?', 'i');
-        
         switch (findType) {
             case 'combined' :
                 var value = '';
@@ -439,8 +438,8 @@ function DynamicTable() {
             if (this.config.find[x] === null || typeof this.config.find[x] === 'undefined') {
                 continue;
             }
-            
-            if (this.matchField(x, rowIndex) === false) {
+           
+            if (this.matchField(x, rowIndex) === false) {                
                 return false;
             }
         }        
@@ -554,17 +553,17 @@ function DynamicTable() {
                 continue;
             }
             var trElements = headerElements[x].children;
-            
+            var childAmount = headerElements[x].childElementCount;
+            var j = 0;
             for (var y in trElements) {
-                if (String(trElements[y].tagName).toLowerCase() !== 'td' || (parseInt(y)>=0) === false) {
+                if (String(trElements[y].tagName).toLowerCase() !== 'td' || (j++) >= childAmount) {
                     continue;
-                }                
+                }
                 this.header[i] = {
                     element: trElements[y]
                 };
                 
                 var thisId = trElements[y].id;
-                
                 this.columnIndexes[thisId] = i;
                 
                 if (typeof columns[thisId] !== 'undefined') {
