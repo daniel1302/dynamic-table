@@ -86,7 +86,8 @@ function DynamicTable() {
             prev: 'pages-prev',
             next: 'pages-next'
         },
-        columns: {}      
+        columns: {},
+        find: {}
     };
     
     this.SORT_TYPE_ASC = 0;
@@ -518,7 +519,6 @@ function DynamicTable() {
         
         var i = this.data.length;
         var headerLength = this.header.length;
-        
         for (var x in data) {
             if (data[x].length === headerLength) {
                 this.data[i++] = data[x];
@@ -549,20 +549,20 @@ function DynamicTable() {
         var i = 0;
         this.header = [];
         
-        for (var x in headerElements) {
+        for (var x in headerElements) {            
             if (String(headerElements[x].tagName).toLowerCase() !== 'tr') {
                 continue;
             }
             var trElements = headerElements[x].children;
+            
             for (var y in trElements) {
-               
-                if (String(trElements[y].tagName).toLowerCase() !== 'td') {
+                if (String(trElements[y].tagName).toLowerCase() !== 'td' || (parseInt(y)>=0) === false) {
                     continue;
-                }
-                
+                }                
                 this.header[i] = {
                     element: trElements[y]
                 };
+                
                 var thisId = trElements[y].id;
                 
                 this.columnIndexes[thisId] = i;
@@ -576,9 +576,10 @@ function DynamicTable() {
                         this.header[i].sort.down.dataset.column = thisId;
                     }
                 }
-         
+                console.log('X: '+x+' Y: '+y+' I:'+i);
                 i++;
             }
+            
             break;
         }
     };
