@@ -74,6 +74,10 @@ function removeClass(element, className) {
     return true;
 }
 
+function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function DynamicTable() {
     this.config = {
         pagination: {
@@ -100,6 +104,7 @@ function DynamicTable() {
     this.paginationNextElement = null;
     this.activeRows = [];
     this.rowsAmount = 0;
+    this.enablePagination = 0;
     
     this.init = function(tableContainer, config) {
         if (typeof tableContainer !== 'object') {
@@ -138,22 +143,16 @@ function DynamicTable() {
         
         if (this.paginationElement !== null) {
             var pChildren = this.paginationElement.children;
-            console.log(pChildren);
             var toDelete = [];
             for (var x in pChildren) {
-                console.log('SPRAWDZAM '+pChildren[x].innerHTML);
                 if (typeof pChildren[x] !== 'undefined' && typeof pChildren[x].dataset !== 'undefined' && typeof pChildren[x].dataset.page !== 'undefined') {
-                    toDelete[toDelete.length] = parseInt(x);
+                    toDelete[toDelete.length] = pChildren[x];
                     
                 }
             }
-            console.log(toDelete);
             for (var i=0;i<toDelete.length;i++) {
-                var tmpElement = pChildren[toDelete[i]];
-                //console.log('USUWAM: '+pChildren[toDelete[x]].dataset.page);
-                this.paginationElement.removeChild(tmpElement);
+                this.paginationElement.removeChild(toDelete[i]);
             }
-            console.log(pChildren);
         }
     };
     
@@ -161,8 +160,7 @@ function DynamicTable() {
         if (typeof this.data[dataIndex] === 'undefined') {
             throw 'Próbujesz rysować nieistniejący wiersz z danymi';
         }
-        
-        if (this.activeRows.length > 0 && this.activeRows.indexOf(dataIndex) < 0) {
+        if (this.activeRows.length > 0 && this.activeRows.indexOf(parseInt(dataIndex)) < 0) {
             return false;
         }
         
@@ -209,6 +207,7 @@ function DynamicTable() {
             throw 'Nie zdefiniowano elementu paginacji';
         }
         
+        this.enablePagination = 1;
         this.countRows();
         
         var paginationElementTag = String(paginationElement.tagName).toLowerCase();
@@ -239,16 +238,19 @@ function DynamicTable() {
     };
     
     this.drawPagesList = function() {
+        if (this.enablePagination === 0) {
+            return false;
+        }
+        
         var perPage = parseInt(this.config.pagination.perPage);
-        if (perPage > this.rowsAmount) {
+        if (perPage >= this.rowsAmount) {
             this.paginationElement.style.display = 'none';
         } else {
             this.paginationElement.style.display = 'block';
             
             var pages = Math.ceil(this.rowsAmount/perPage);
             var that = this;
-            //console.log(this.paginationElement.children);
-            //console.log('PAGES: '+pages);
+            //console.log(this.paginationElement.children);          
             for (var i=1; i<=pages; i++) {
                 var tmpElement = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
                 
@@ -272,6 +274,10 @@ function DynamicTable() {
     };
     
     this.showPage = function(pageNumber) {
+        if (this.enablePagination === 0) {
+            return false;
+        }
+        
         var children = this.bodyElement.children;
         
         var perPage = parseInt(this.config.pagination.perPage);
@@ -313,10 +319,13 @@ function DynamicTable() {
         var colIndex = this.columnIndexes[column];
         var oldOrder = {};
         var newOrder = [];
+        var newActiveRows = [];
         
+        var i=0;
         for (var x in this.data) {
-            oldOrder[this.data[x][colIndex]] = x;
-            newOrder[newOrder.length] = this.data[x][colIndex];            
+            var newValue = this.data[x][colIndex]+'_'+(i++);
+            oldOrder[newValue] = x;
+            newOrder[newOrder.length] = newValue;
         }
         
         newOrder.sort();
@@ -325,12 +334,22 @@ function DynamicTable() {
         }
         
         var newData = [];
+        var newStyles = [];
         for (var x in newOrder) {
-            newData[newData.length] = this.data[oldOrder[newOrder[x]]];
+            var rowIndex = newData.length;
+            newData[rowIndex] = this.data[oldOrder[newOrder[x]]];
+            newStyles[rowIndex] = this.styles[oldOrder[newOrder[x]]];
+            if (this.activeRows.indexOf(parseInt(oldOrder[newOrder[x]])) >= 0) {
+                newActiveRows[newActiveRows.length] = rowIndex;
+            }
         }
+
         this.data = newData;
+        this.styles = newStyles;
         this.clear();
+        this.activeRows = newActiveRows;
         this.draw();
+        this.drawPagesList();
         this.showPage(1);
     };
     
@@ -430,13 +449,15 @@ function DynamicTable() {
     
     this.findInTable = function() {        
         this.clear();
+        this.activeRows[0] = null;
         for (var x in this.data) {
             if (this.matchRow(x) !== false) {
-                this.activeRows[this.activeRows.length] = x;
+                this.activeRows[this.activeRows.length] = parseInt(x);
             }
         }
         
         this.draw();
+        this.countRows();
         this.drawPagesList();
         this.showPage(1);
     };
@@ -449,7 +470,9 @@ function DynamicTable() {
         
         if (this.activeRows.length > 0) {
             this.rowsAmount = this.activeRows.length;
-            //console.log(this.rowsAmount);
+            if (this.activeRows[0] === null) {
+                this.rowsAmount -= 1;
+            }
             return;
         }
         
