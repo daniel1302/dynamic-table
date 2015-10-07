@@ -251,7 +251,7 @@ function DynamicTable() {
             
             var pages = Math.ceil(this.rowsAmount/perPage);
             var that = this;
-            //console.log(this.paginationElement.children);          
+            
             for (var i=1; i<=pages; i++) {
                 var tmpElement = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
                 
@@ -576,7 +576,6 @@ function DynamicTable() {
                         this.header[i].sort.down.dataset.column = thisId;
                     }
                 }
-                console.log('X: '+x+' Y: '+y+' I:'+i);
                 i++;
             }
             
