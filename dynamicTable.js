@@ -26,7 +26,7 @@ function hasClass(element, className) {
             return true;
         }
     }
-    
+   
     return false;
 }
 
@@ -84,7 +84,8 @@ function DynamicTable() {
             perPage: 4,
             id: 'pages',
             prev: 'pages-prev',
-            next: 'pages-next'
+            next: 'pages-next',
+            listDisplay: null
         },
         columns: {},
         find: {}
@@ -100,12 +101,16 @@ function DynamicTable() {
     this.bodyElement = null;
     this.data = null;
     this.styles = [];
+    this.page = 1;
     this.paginationElement = null;
     this.paginationPrevElement = null;
     this.paginationNextElement = null;
     this.activeRows = [];
     this.rowsAmount = 0;
     this.enablePagination = 0;
+    this._paginationEventsIsEnabled = 0;
+    this._paginationEventsIsEnabledList = [];
+    this.paginationListDisplay = null;
     
     this.init = function(tableContainer, config) {
         if (typeof tableContainer !== 'object') {
@@ -115,6 +120,10 @@ function DynamicTable() {
         this.config.columns     = config.columns;        
         this.config.pagination  = config.pagination;
         this.config.find        = config.find;
+        
+        if (typeof this.config.pagination.listDisplay !== 'undefined' && this.config.pagination.listDisplay !== null) {
+            this.paginationListDisplay = this.config.pagination.listDisplay;
+        }
         
         this.tableContainer = tableContainer;
         
@@ -138,10 +147,7 @@ function DynamicTable() {
         }
     };
     
-    this.clear = function() {
-        this.bodyElement.innerHTML = '';
-        this.activeRows = [];
-        
+    this.clearPaginationList = function() {
         if (this.paginationElement !== null) {
             var pChildren = this.paginationElement.children;
             var toDelete = [];
@@ -155,6 +161,13 @@ function DynamicTable() {
                 this.paginationElement.removeChild(toDelete[i]);
             }
         }
+    }
+    
+    this.clear = function() {
+        this.bodyElement.innerHTML = '';
+        this.activeRows = [];
+        
+        this.clearPaginationList();
     };
     
     this.drawRow = function(dataIndex) {
@@ -167,9 +180,14 @@ function DynamicTable() {
         
         var tr = newElement('tr', {});
             
-        if (typeof this.styles[dataIndex] !== 'undefined' && typeof this.styles[dataIndex].style !== 'undefined') {
-            for (var j in this.styles[dataIndex].style) {
-                tr.style[j] = this.styles[dataIndex].style[j];
+        if (typeof this.styles[dataIndex] !== 'undefined') {
+            if (typeof this.styles[dataIndex].style !== 'undefined') {
+                for (var j in this.styles[dataIndex].style) {
+                    tr.style[j] = this.styles[dataIndex].style[j];
+                }
+            }
+            if (typeof this.styles[dataIndex].class !== 'undefined') {
+                tr.className = this.styles[dataIndex].class;
             }
         }
         for (var y in this.data[dataIndex]) {
@@ -177,9 +195,15 @@ function DynamicTable() {
                 innerHTML: this.data[dataIndex][y]
             });
 
-            if (typeof this.styles[dataIndex] !== 'undefined' && typeof this.styles[dataIndex][y] !== 'undefined' && typeof this.styles[dataIndex][y].style !== 'undefined') {
-                for (var j in this.styles[dataIndex][y].style) {
-                    tmpTd.style[j] = this.styles[dataIndex][y].style[j];
+            if (typeof this.styles[dataIndex] !== 'undefined' && typeof this.styles[dataIndex][y] !== 'undefined') {
+                if (typeof this.styles[dataIndex][y].style !== 'undefined') {
+                    for (var j in this.styles[dataIndex][y].style) {
+                        tmpTd.style[j] = this.styles[dataIndex][y].style[j];
+                    }
+                }
+                
+                if (typeof this.styles[dataIndex][y].class !== 'undefined') {
+                    tmpTd.className =this.styles[dataIndex][y].class;
                 }
             }
             tr.appendChild(tmpTd);
@@ -238,6 +262,65 @@ function DynamicTable() {
         this.showPage(1);
     };
     
+    
+    this.formatPaginationList = function() {
+        var paginationOffset = 2;
+
+        var children        = this.paginationElement.children;
+        var perPage         = parseInt(this.config.pagination.perPage);
+        var lastPageNumber  = Math.ceil(this.rowsAmount/perPage);           
+        
+        for (var x in children) {
+            if (typeof children[x].dataset === 'undefined' || typeof children[x].dataset['page'] === 'undefined') {
+                continue;
+            }
+            var i = parseInt(children[x].dataset['page']);
+            if (i === 1 || i === lastPageNumber) {
+                continue;
+            }
+            if (this.paginationListDisplay === null && (typeof children[x].style.display !== 'undefined' || getComputedStyle(children[x]).display !== null)) {
+                if (typeof children[x].style.display !== 'undefined') {
+                    this.paginationListDisplay = children[x].style.display;
+                } else  {
+                    this.paginationListDisplay = getComputedStyle(children[x]).display;
+                }
+            } else {
+                this.paginationListDisplay = 'inline-block';
+            }
+                        
+            if (this.page > paginationOffset+1 && this.page < (lastPageNumber - paginationOffset-1)) {                
+                if (i > (this.page-paginationOffset) && i < (this.page+paginationOffset)) {
+                    children[x].innerHTML = i;
+                    children[x].style.display = this.paginationListDisplay;
+                } else if (i === (this.page-paginationOffset) || i === (this.page+paginationOffset)) {
+                    children[x].innerHTML = '...';
+                    children[x].style.display = this.paginationListDisplay;
+                } else {
+                    children[x].style.display = 'none';
+                }            
+            } else if (this.page < (2*paginationOffset+1)) {
+                if (i <= (2*paginationOffset+1)) {
+                    children[x].innerHTML = i;
+                    children[x].style.display = this.paginationListDisplay;
+                } else if (i === (2*paginationOffset+2)) {
+                    children[x].innerHTML = '...';
+                    children[x].style.display = this.paginationListDisplay;
+                } else {
+                    children[x].style.display = 'none';
+                }
+            } else if (this.page >= (lastPageNumber-(2*paginationOffset+1))) {
+                if (i === (lastPageNumber-(2*paginationOffset+1))) {
+                    children[x].innerHTML = '...';
+                    children[x].style.display = this.paginationListDisplay;
+                } else if (i > (lastPageNumber-(2*paginationOffset+1))) {
+                    children[x].innerHTML = i;
+                    children[x].style.display = this.paginationListDisplay;
+                } else {
+                    children[x].style.display = 'none';
+                }
+            } 
+        }
+    };
     this.drawPagesList = function() {
         if (this.enablePagination === 0) {
             return false;
@@ -249,31 +332,37 @@ function DynamicTable() {
         } else {
             this.paginationElement.style.display = 'block';
             
-            var pages = Math.ceil(this.rowsAmount/perPage);
-            var that = this;
+            var pages   = Math.ceil(this.rowsAmount/perPage);
+            var that    = this;
             
             for (var i=1; i<=pages; i++) {
-                var tmpElement = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
-                
-                tmpElement.addEventListener('click', function() {
-                    that.showPage(parseInt(this.dataset.page));
-                });
+                var tmpElement  = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
+                var that        = this;
+                if (this._paginationEventsIsEnabledList.indexOf(i) === -1) {
+                    tmpElement.addEventListener('click', function() {
+                        that.showPage(parseInt(this.dataset.page));
+                    });
+                    this._paginationEventsIsEnabledList[i] = 1;
+                }
                 this.paginationElement.insertBefore(tmpElement, this.paginationNextElement);
             }
             
-            this.paginationPrevElement.addEventListener('click', function() {
-                if (that.page > 1) {
-                    that.showPage(that.page-1);
-                }
-            });
-            this.paginationNextElement.addEventListener('click', function() {
-                if (that.page < Math.ceil(that.rowsAmount/perPage)) {
-                    that.showPage(that.page+1);
-                }
-            });   
+            if (this._paginationEventsIsEnabled === 0) {
+                this.paginationPrevElement.addEventListener('click', function() {
+                    if (that.page > 1) {
+                        that.showPage(that.page-1);
+                    }
+                });
+                this.paginationNextElement.addEventListener('click', function() {
+                    if (that.page < Math.ceil(that.rowsAmount/perPage)) {
+                        that.showPage(that.page+1);
+                    }
+                });
+                this._paginationEventsIsEnabled = 1;
+            }
         }
     };
-    
+
     this.showPage = function(pageNumber) {
         if (this.enablePagination === 0) {
             return false;
@@ -288,14 +377,13 @@ function DynamicTable() {
         if (pageNumber > pages || pageNumber < 1) {
             throw 'Taka strona nie istnieje!';
         }
-
         this.page = pageNumber;
         
         var i = 0;
         for (var x in children) {
             if (String(children[x].tagName).toLowerCase() === 'tr') {
                 if (i >= ((pageNumber-1)*perPage) && i < (pageNumber*perPage)) {
-                    children[x].style.display = 'table-row';                    
+                    children[x].style.display = 'table-row';
                 } else {
                     children[x].style.display = 'none';
                 }
@@ -303,6 +391,7 @@ function DynamicTable() {
             
             i++;
         }
+        
         
         var pChildren = this.paginationElement.children;
         for (var x in pChildren) {
@@ -314,6 +403,9 @@ function DynamicTable() {
                 }
             }
         }
+        this.formatPaginationList();
+        
+        //this.drawPagesList();
     };
     
     this.sortData = function(type, column) {
@@ -367,6 +459,7 @@ function DynamicTable() {
             var recordIndex = this.data.length;
             this.styles[recordIndex] = {};
             this.styles[recordIndex]['style'] = children[x].style;
+            this.styles[recordIndex]['class'] = children[x].className;
             
             var tmpDataRow = [];
             var rowChildren = children[x].children;
@@ -378,6 +471,7 @@ function DynamicTable() {
                 tmpDataRow[tmpIndex] = rowChildren[y].innerHTML;
                 this.styles[recordIndex][tmpIndex] = {};
                 this.styles[recordIndex][tmpIndex]['style'] = rowChildren[y].style;
+                this.styles[recordIndex][tmpIndex]['class'] = rowChildren[y].className;
             }
             this.data[recordIndex] = tmpDataRow;
         }
@@ -523,8 +617,6 @@ function DynamicTable() {
                 this.data[i++] = data[x];
             }
         }
-        
-        
     };
     
     this.getHeaderDescription = function() {        
