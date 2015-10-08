@@ -78,6 +78,16 @@ function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function first(array) {
+    if (typeof array === 'object') {
+        for (var x in array) {
+            return array[x];
+        }
+    }
+        
+    return null;
+} 
+
 function DynamicTable() {
     this.config = {
         pagination: {
@@ -117,9 +127,7 @@ function DynamicTable() {
             throw 'Przeakż poprawny obiekt tabelki';
         }
         
-        this.config.columns     = config.columns;        
-        this.config.pagination  = config.pagination;
-        this.config.find        = config.find;
+        this.parseConfig(config);
         
         if (typeof this.config.pagination.listDisplay !== 'undefined' && this.config.pagination.listDisplay !== null) {
             this.paginationListDisplay = this.config.pagination.listDisplay;
@@ -130,6 +138,78 @@ function DynamicTable() {
         this.getHeaderDescription();
         this.bindEvents();
         this.testBody();
+    };
+    
+    this.parseConfig = function(config) {
+        for (var x in config) {
+            if (typeof this.config[x] === 'undefined') {
+                continue;
+            }
+            
+            for (var property in config[x]) {
+                if (x === 'find' && typeof config[x][property]['type'] !== 'undefined' && config[x][property]['type'] === 'list') {
+                    if (this.generateFindList(property, config[x][property]) !== true) {
+                        continue;
+                    }
+                }
+                
+                this.config[x][property] = config[x][property];
+            }
+        }
+    };
+    
+    this.getAllValuesOfColumn = function(columnName) {
+        if (typeof this.columnIndexes === null || typeof this.columnIndexes[columnName] === 'undefined') {
+            throw 'Kolumna dla której próbujesz wybrać wartości nie istnieje.';
+        }
+        
+        if (this.data === null) {
+            throw 'Data nie została zdefiniowana.';
+        }
+        
+        var values = [];
+        var col = this.columnIndexes[columnName];
+        for (var x in this.data) {
+            if (values.indexOf(this.data[x][col]) === -1) {
+                values[values.length] = this.data[x][col];
+            } 
+        }
+        
+        return values;
+    };
+    
+    this.generateFindList = function(propertyName, propertyConfig) {
+        if (typeof propertyConfig.columns === 'undefined' || propertyConfig.columns.length !== 1) {
+            throw 'Pole wyszukiwania typu lista może mieć tylko jedna kolumnę';
+        }
+        var column = first(propertyConfig.columns);
+        var element = document.getElementById(column);
+        
+        if (element === null) {
+            throw 'Element dla listy wyszukiwania nie istnieje';
+        }
+        
+        var hiddenInput = newElement('input', {
+            type:   'hidden',
+            value:  '',
+            id:     propertyName,
+            style:  {
+                display: 'none'
+            }
+        });
+        
+        element.appendChild(hiddenInput);
+        return true;
+    };
+    
+    this.serviceFind = function(findIdentifier, findValue) {
+        if (typeof this.config.find[findIdentifier] === 'undefined') {
+            throw 'Próbujesz obsłużyć błędną konfigurację wyszukiwania';
+        }
+        
+        var hiddenFindInput = document.getElementById(findIdentifier);        
+        hiddenFindInput.value = findValue;
+        this.findInTable();
     };
     
     this.testBody = function () {
@@ -161,7 +241,7 @@ function DynamicTable() {
                 this.paginationElement.removeChild(toDelete[i]);
             }
         }
-    }
+    };
     
     this.clear = function() {
         this.bodyElement.innerHTML = '';

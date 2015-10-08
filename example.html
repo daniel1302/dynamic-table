@@ -50,7 +50,11 @@ and open the template in the editor.
                 <tr>
                     <td colspan="2"><input type="text" name="find-imie-nazwisko" id="find-imie-nazwisko" style="width: 95%" /></td>
                     <td><input type="text" name="find-wiek" id="find-wiek" style="width: 95%;" /></td>
-                    <td><input type="text" name="find-miasto" id="find-miasto" style="width: 95%;" /></td>
+                    <td>
+                        <select name="select-miasto" id="select-miasto">
+                            
+                        </select>
+                    </td>
                 </tr>
             </thead>
             <tbody>
@@ -112,7 +116,7 @@ and open the template in the editor.
             },
             'find-miasto': {
                 columns: ['miasto'],
-                type: 'separated'
+                type: 'list'
             },
             'find-in-all': {
                 columns: ['imie', 'nazwisko', 'wiek', 'miasto'],
@@ -459,6 +463,20 @@ and open the template in the editor.
     dynamicTable.init(table, config);
     dynamicTable.getData();
     dynamicTable.setData(data);
+    
+    
+    var optionsHTML = '<option value="" selected="selected"></option>';
+    var options = dynamicTable.getAllValuesOfColumn('miasto');
+    for (var x in options) {
+        optionsHTML += '<option value="'+options[x]+'">'+options[x]+'</option>';
+    }
+    var selectItem = document.getElementById('select-miasto');
+    selectItem.innerHTML = optionsHTML;
+    selectItem.addEventListener('change', function() {
+        dynamicTable.serviceFind('find-miasto', this.value);
+    });
+    
+    
     dynamicTable.clear();
     dynamicTable.draw();
     dynamicTable.pagination();
