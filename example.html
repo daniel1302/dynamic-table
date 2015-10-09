@@ -38,6 +38,13 @@ and open the template in the editor.
         </style>
     </head>
     <body>
+        Ilość wpisów na strone: 
+        <select name="rows-amount" id="rows-amount">
+            <option value="10">10</option>
+            <option value="25" selected="selected">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
         <input type="text" name="find-in-all" id="find-in-all" style="width: 75%" /><br /><br />
         <table id="tabelka" border="1" width="75%">
             <thead>
@@ -480,6 +487,15 @@ and open the template in the editor.
         dynamicTable.serviceFind('find-miasto', this.value);
     });
     
+    function changeRowsPerPage(element) {
+        var value = parseInt(element.value);
+        dynamicTable.setRowsAmountPerPage(value);
+        
+    }
+    changeRowsPerPage(document.getElementById('rows-amount'));
+    document.getElementById('rows-amount').addEventListener('change', function() {
+        changeRowsPerPage(this);
+    })
     
     dynamicTable.clear();
     dynamicTable.draw();

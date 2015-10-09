@@ -121,6 +121,8 @@ function DynamicTable() {
     this._paginationEventsIsEnabled = 0;
     this._paginationEventsIsEnabledList = [];
     this.paginationListDisplay = null;
+    this.pagesNumberElementContainer = [];
+    this.findBuffer = null;
     
     this.init = function(tableContainer, config) {
         if (typeof tableContainer !== 'object') {
@@ -156,6 +158,17 @@ function DynamicTable() {
                 this.config[x][property] = config[x][property];
             }
         }
+    };
+    
+    this.setRowsAmountPerPage = function(rows) {
+        if (parseInt(rows) > 2) {
+            this.config.pagination.perPage = parseInt(rows);
+        }
+        
+        this.drawPagesList();
+        this.showPage(1);
+        
+        return true;
     };
     
     this.getAllValuesOfColumn = function(columnName) {
@@ -297,8 +310,6 @@ function DynamicTable() {
             this.drawRow(x);
         }
     };
-
-    
     
     this.pagination = function() {
         var config = this.config.pagination;
@@ -355,6 +366,9 @@ function DynamicTable() {
                 continue;
             }
             var i = parseInt(children[x].dataset['page']);
+            if (i > lastPageNumber) {
+                break;
+            }
             if (i === 1 || i === lastPageNumber) {
                 continue;
             }
@@ -415,16 +429,27 @@ function DynamicTable() {
             var pages   = Math.ceil(this.rowsAmount/perPage);
             var that    = this;
             
+            var declaredPagesAmount = this.pagesNumberElementContainer.length;
+            for (var k=(pages+1); k<declaredPagesAmount; k++) {
+                this.pagesNumberElementContainer[k].style.display = 'none';
+            }
+            
             for (var i=1; i<=pages; i++) {
-                var tmpElement  = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
-                var that        = this;
-                if (this._paginationEventsIsEnabledList.indexOf(i) === -1) {
-                    tmpElement.addEventListener('click', function() {
-                        that.showPage(parseInt(this.dataset.page));
-                    });
-                    this._paginationEventsIsEnabledList[i] = 1;
+                if (typeof this.pagesNumberElementContainer[i] === 'undefined' || this.pagesNumberElementContainer[i] === null) {
+                    var tmpElement  = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
+                    var that        = this;
+                    if (this._paginationEventsIsEnabledList.indexOf(i) === -1) {
+                        tmpElement.addEventListener('click', function() {
+                            that.showPage(parseInt(this.dataset.page));
+                        });
+                        this._paginationEventsIsEnabledList[i] = 1;
+                    }
+                    this.paginationElement.insertBefore(tmpElement, this.paginationNextElement);
+
+                    this.pagesNumberElementContainer[i] = tmpElement;
+                } else {
+                    this.pagesNumberElementContainer[i].style.display = this.paginationListDisplay;
                 }
-                this.paginationElement.insertBefore(tmpElement, this.paginationNextElement);
             }
             
             if (this._paginationEventsIsEnabled === 0) {
@@ -455,7 +480,7 @@ function DynamicTable() {
         var pages = Math.ceil(elementsAmount/perPage);
         
         if (pageNumber > pages || pageNumber < 1) {
-            throw 'Taka strona nie istnieje!';
+            return false;
         }
         this.page = pageNumber;
         
@@ -470,7 +495,7 @@ function DynamicTable() {
             }
             
             i++;
-        }
+        }        
         
         
         var pChildren = this.paginationElement.children;
@@ -483,6 +508,8 @@ function DynamicTable() {
                 }
             }
         }
+        
+        
         this.formatPaginationList();
     };
     
@@ -683,7 +710,8 @@ function DynamicTable() {
                 continue;
             }
             tmpElement.addEventListener('keyup', function(e) {
-                that.findInTable();
+                clearTimeout(that.findBuffer);
+                that.findBuffer = setTimeout(function(){ that.findInTable(); }, 300);
             });
         }
     };
