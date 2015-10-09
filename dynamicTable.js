@@ -224,6 +224,8 @@ function DynamicTable() {
         var hiddenFindInput = document.getElementById(findIdentifier);        
         hiddenFindInput.value = findValue;
         this.findInTable();
+        this.drawPagesList();
+        this.showPage(1);
     };
     
     this.testBody = function () {
