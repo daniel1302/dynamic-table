@@ -165,6 +165,7 @@ function DynamicTable() {
             this.config.pagination.perPage = parseInt(rows);
         }
         
+        this.clearPaginationList();
         this.drawPagesList();
         this.showPage(1);
         
@@ -243,16 +244,12 @@ function DynamicTable() {
     this.clearPaginationList = function() {
         if (this.paginationElement !== null) {
             var pChildren = this.paginationElement.children;
-            var toDelete = [];
             for (var x in pChildren) {
                 if (typeof pChildren[x] !== 'undefined' && typeof pChildren[x].dataset !== 'undefined' && typeof pChildren[x].dataset.page !== 'undefined') {
-                    toDelete[toDelete.length] = pChildren[x];
-                    
+                    pChildren[x].style.display = 'none';
                 }
             }
-            for (var i=0;i<toDelete.length;i++) {
-                this.paginationElement.removeChild(toDelete[i]);
-            }
+           
         }
     };
     
@@ -428,12 +425,7 @@ function DynamicTable() {
             
             var pages   = Math.ceil(this.rowsAmount/perPage);
             var that    = this;
-            
-            var declaredPagesAmount = this.pagesNumberElementContainer.length;
-            for (var k=(pages+1); k<declaredPagesAmount; k++) {
-                this.pagesNumberElementContainer[k].style.display = 'none';
-            }
-            
+                        
             for (var i=1; i<=pages; i++) {
                 if (typeof this.pagesNumberElementContainer[i] === 'undefined' || this.pagesNumberElementContainer[i] === null) {
                     var tmpElement  = newElement('li', { innerHTML: i, 'data-page': i, class: 'test'});
