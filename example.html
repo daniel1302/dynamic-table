@@ -85,7 +85,8 @@ and open the template in the editor.
             perPage: 4,
             id: 'pages',
             prev: 'pages-prev',
-            next: 'pages-next'
+            next: 'pages-next',
+            offset: 5
         },
         columns: {
             imie: {
@@ -102,7 +103,11 @@ and open the template in the editor.
             },
             miasto: {
                 type: 'id',
-                sort: {up: 'sort-miasto-up', down: 'sort-miasto-down'},
+                sort: {
+                    up: 'sort-miasto-up', 
+                    down: 'sort-miasto-down'
+                    valueOrder: [/*Wartości po kolei jak mają być uwzględnione przy sortowaniu*/]  
+                },
             }
         },
         find: {
@@ -455,8 +460,7 @@ and open the template in the editor.
         ['Adam',    'Nowak',    24, 'Różanna'],
         ['Anna',    'Maria',    25, 'Klęczany'],
         ['Ula',     'Zagóra',   21, 'Męcina'],
-        ['Jan',     'Kowalski', 30, 'Limanowa'],
-        
+        ['Jan',     'Kowalski', 30, 'Limanowa']        
     ];
     
     var dynamicTable = new DynamicTable();

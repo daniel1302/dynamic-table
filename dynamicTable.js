@@ -344,7 +344,7 @@ function DynamicTable() {
     
     
     this.formatPaginationList = function() {
-        var paginationOffset = 2;
+        var paginationOffset = (typeof this.config.pagination.offset !== 'undefined') ? parseInt(this.config.pagination.offset) : 4;
 
         var children        = this.paginationElement.children;
         var perPage         = parseInt(this.config.pagination.perPage);
@@ -484,19 +484,26 @@ function DynamicTable() {
             }
         }
         this.formatPaginationList();
-        
-        //this.drawPagesList();
     };
     
-    this.sortData = function(type, column) {
+    this.sortData = function(type, column) {       
         var colIndex = this.columnIndexes[column];
         var oldOrder = {};
         var newOrder = [];
         var newActiveRows = [];
         
         var i=0;
-        for (var x in this.data) {
-            var newValue = this.data[x][colIndex]+'_'+(i++);
+        
+        if (typeof this.header[colIndex] === 'undefined' || typeof this.header[colIndex].sort === 'undefined') {
+            return false;
+        }
+        for (var x in this.data) {           
+            if (this.header[colIndex].sort.valueOrder.indexOf(this.data[x][colIndex]) !== -1) {
+                var newValue = this.header[colIndex].sort.valueOrder.indexOf(this.data[x][colIndex]);
+            } else {
+                var newValue = this.data[x][colIndex]+'_'+(i++);
+            }
+            
             oldOrder[newValue] = x;
             newOrder[newOrder.length] = newValue;
         }
@@ -745,6 +752,11 @@ function DynamicTable() {
                         this.header[i].sort.down = document.getElementById(columns[thisId].sort.down);
                         this.header[i].sort.up.dataset.column = thisId;
                         this.header[i].sort.down.dataset.column = thisId;
+                        if (typeof columns[thisId].sort.valueOrder !== 'undefined') {
+                            this.header[i].sort.valueOrder = columns[thisId].sort.valueOrder;
+                        } else {
+                            this.header[i].sort.valueOrder = [];
+                        }
                     }
                 }
                 i++;
